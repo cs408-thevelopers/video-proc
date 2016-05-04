@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 fast = cv2.FastFeatureDetector(threshold = 15);
 
 cap = cv2.VideoCapture('./test.mp4')
-cap = cv2.VideoCapture(0)
+#cap = cv2.VideoCapture(0)
 
 while(True):
 
