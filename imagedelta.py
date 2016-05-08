@@ -42,6 +42,12 @@ def add_image(frame, dframe, temp):
 
 
 # In[7]:
+height , width , layers =  frame1.shape
+
+fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v') # note the lower case
+fps = 15
+
+video = cv2.VideoWriter('video.avi', fourcc, fps, (width,height))
 
 while True:
     frame1 = frame2
@@ -55,9 +61,6 @@ while True:
     
     temp = add_image(frame2, dframe, temp)
     
-    cv2.imshow('original video', frame1)
-    cv2.imshow('delta frame', dframe)
-    cv2.imshow('record', temp)
-    
-    cv2.waitKey(1)
+    video.write(temp)
 
+video.release()
