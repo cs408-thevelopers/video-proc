@@ -1,26 +1,33 @@
 import numpy, cv2
 from matplotlib import pyplot as plt
- 
+import datetime
+
 #video input
 camera = cv2.VideoCapture("test1.mp4")
+fps = camera.get(cv2.cv.CV_CAP_PROP_FPS)
+_, frame1 = camera.read()
+width, height = frame1.shape[:2]
+temp = cv2.bitwise_xor(frame1,frame1)
+t = datetime.datetime.now()
 
 # constant
 startsecond = 20
+captureinterval = 30
 frameskipping = 20
 linethickness = 20
-contourlimit = 2
+contourlimit = 4
 colorthresh = 7
 gaussianradius = 5 # odd number
-dilateiteration = 6
+dilateiteration = 5
 
+#relative variable
+minimumwidth = (30 * 360 / width)
+framelimit = int(round(captureinterval * fps / frameskipping))
+print framelimit
 
-for i in range(startsecond * 15 + 1):
+for i in range(int(round(startsecond * fps))):
     _, frame1 = camera.read()
-    _, frame2 = camera.read()
-
-# image size, result frame left to be blank
-width, height = frame1.shape[:2]
-temp = cv2.bitwise_xor(frame1,frame1)
+_, frame2 = camera.read()
 
 # gray : colored frame -> grayscale frame
 # grayscale frame is transformed by gaussian blur
@@ -30,14 +37,15 @@ def gray(frame):
     return gray
 
 # iterating varaibles
-t = k = 0
+framecount = recordcount = 0
 contourset = list()
 
 while True:
-	# frame iterating
+    # frame iterating
     frame1 = frame2
-    for i in range(frameskipping): _, frame2 = camera.read()
-    t += 1
+    for i in range(frameskipping):_, frame2 = camera.read()
+    framecount += 1
+    print framecount
     
     #if the next frame is not valid, stop iteration
     if not _:break
@@ -61,29 +69,31 @@ while True:
     for contours in contourset:
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if w > 60:
+            if w >= minimumwidth:
 				cv2.rectangle(mask, (x, y), (x + w, height - 1), 255, -1)
-				cv2.rectangle(mask, (x, y), (x + w, height - 1), 255, 0)#2*linethickness)
+				cv2.rectangle(mask, (x, y), (x + w, height - 1), 255, 2*linethickness)
 	
 	# combine current and updated background
     new = cv2.bitwise_and(frame2, frame2, mask = cv2.bitwise_not(mask))
     old = cv2.bitwise_and(temp, temp, mask = mask)
     temp = cv2.add(new, old)
-    density = cv2.adaptiveThreshold(gray(temp),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+    #density = cv2.adaptiveThreshold(gray(temp),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     
     #cv2.imshow('original video', frame2)
     #cv2.imshow('mask', mask)
     #cv2.imshow('record', temp)
     #cv2.imshow('chalkboard_density', density)
 
-
-    if t >= 30: 
-        cv2.imwrite("result/result_%s.png" % ('0000' + str(k))[-4:], temp)
-        cv2.imwrite("difference/diff_%s.png" % ('0000' + str(k))[-4:], density)
-        print "color of frame %s: " % k,
-        print cv2.mean(density)[0]
-        t = 0
-        k += 1
+    if framecount >= framelimit: 
+        u = datetime.datetime.now()
+        cv2.imwrite("result/result_%s.png" % ('0000' + str(recordcount))[-4:], temp)
+        #cv2.imwrite("difference/diff_%s.png" % ('0000' + str(recordcount))[-4:], density)
+        print u - t,
+        #print "color of frame %s: " % recordcount,
+        #print cv2.mean(density)[0]
+        t = u
+        framecount = 0
+        recordcount += 1
     
     cv2.waitKey(1)
 
