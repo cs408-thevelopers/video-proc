@@ -9,7 +9,6 @@ cap = cv2.VideoCapture('./test1.mp4')
 #cap = cv2.VideoCapture(0)
 
 while(True):
-
 	ret, frame = cap.read()
 	kp = fast.detect(frame, None)
 	frame2 = cv2.drawKeypoints(frame, kp, color=(255, 0, 0))

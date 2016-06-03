@@ -2,14 +2,14 @@ import numpy, cv2
 from matplotlib import pyplot as plt
  
 #video input
-camera = cv2.VideoCapture("test5.mp4")
+camera = cv2.VideoCapture("test1.mp4")
 
 # constant
-startsecond = 1
-frameskipping = 10
-linethickness = 5
-contourlimit = 5
-colorthresh = 3
+startsecond = 20
+frameskipping = 20
+linethickness = 20
+contourlimit = 2
+colorthresh = 7
 gaussianradius = 5 # odd number
 dilateiteration = 6
 
@@ -61,9 +61,9 @@ while True:
     for contours in contourset:
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if w > 30:
-				cv2.rectangle(mask, (x, 0), (x + w, height - 1), 255, -1)
-				cv2.rectangle(mask, (x, 0), (x + w, height - 1), 255, 0)#2*linethickness)
+            if w > 60:
+				cv2.rectangle(mask, (x, y), (x + w, height - 1), 255, -1)
+				cv2.rectangle(mask, (x, y), (x + w, height - 1), 255, 0)#2*linethickness)
 	
 	# combine current and updated background
     new = cv2.bitwise_and(frame2, frame2, mask = cv2.bitwise_not(mask))
@@ -71,14 +71,17 @@ while True:
     temp = cv2.add(new, old)
     density = cv2.adaptiveThreshold(gray(temp),255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     
-    cv2.imshow('original video', frame2)
-    cv2.imshow('mask', mask)
-    cv2.imshow('record', temp)
-    cv2.imshow('chalkboard_density', density)
-	
+    #cv2.imshow('original video', frame2)
+    #cv2.imshow('mask', mask)
+    #cv2.imshow('record', temp)
+    #cv2.imshow('chalkboard_density', density)
 
-    if t >= 200: 
-        cv2.imwrite("a/asdf%s.png" % ('0000' + str(k))[-4:], temp)
+
+    if t >= 30: 
+        cv2.imwrite("result/result_%s.png" % ('0000' + str(k))[-4:], temp)
+        cv2.imwrite("difference/diff_%s.png" % ('0000' + str(k))[-4:], density)
+        print "color of frame %s: " % k,
+        print cv2.mean(density)[0]
         t = 0
         k += 1
     
