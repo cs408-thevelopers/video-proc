@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 import datetime
 
 #video input
-filename = "test2.mp4"
-camera = cv2.VideoCapture(filename)
+filename = "test5"
+camera = cv2.VideoCapture("/mnt/ramdisk/" + filename + ".mp4")
 fps = camera.get(cv2.cv.CV_CAP_PROP_FPS)
 _, frame1 = camera.read()
 width, height = frame1.shape[:2]
@@ -41,6 +41,7 @@ def gray(frame):
 framecount = recordcount = 0
 contourset = list()
 
+#f = file(filename + "info.txt", 'w')
 while True:
     # frame iterating
     frame1 = frame2
@@ -96,6 +97,7 @@ while True:
         t = u
         framecount = 0
         recordcount += 1
+        
     
     cv2.waitKey(1)
 
