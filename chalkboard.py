@@ -28,7 +28,6 @@ def getChalkBoard(frame):
 		originCheck = True
 		
 	cv2.imshow('opening', opening)
-	cap = captureTrigger(opening, black_origin)
 	
 	return opening
 
@@ -46,23 +45,3 @@ def getRatioPercent(frame):
 	num_black = getBlacks(frame)
 	return 100*float(num_black - black_origin)/float(background)
 	
-def captureTrigger(frame, origin):
-	blacks = cv2.inRange(frame, 0, 128)
-	num = cv2.countNonZero(blacks)
-	#print("total : " + str(frame.size))
-	#print("blacks: " + str(num))
-	background = frame.size - origin
-	ratio = float(num-origin)/float(background)
-	#print("num: "+str(num))
-	#print("origin: "+str(origin))
-	#print("background: "+str(background))
-	#print("ratio: "+str(ratio*100)+" %")
-	if ratio > 0.5:
-		return True
-	else:
-		return False
-
-#img = cv2.imread('chalkboard.jpg')
-#getChalkBoard(img)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
