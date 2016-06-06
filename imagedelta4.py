@@ -1,20 +1,15 @@
 import numpy, cv2, os, sys
-from scan1 import *
 from chalkboard import *
 
-frm=10
-fps=30
+frm=10 # frame numbers to be skipped(almost meaning combined)
+fps=30 # fps of the video, or webcam
 period=20 # sec
 
 width=640
 height=360
 
-CAM_LAPTOP = 1
+CAM_LAPTOP = 0
 CAM_DESKTOP = 0
-
-DELTA_RANGE = period*fps
-
-list_contain = []
 
 def gray(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -22,10 +17,6 @@ def gray(frame):
     return gray
 
 def doCapture(name_video, name_class, name_lesson, period):
-	list_contain = []
-	list_ratio = []
-	list_frame = []
-	
 	if not os.path.isdir("./" + name_class + "/"):
 		os.mkdir("./" + name_class + "/")
 	if not os.path.isdir("./" + name_class + "/" + name_lesson + "/"):
@@ -39,6 +30,8 @@ def doCapture(name_video, name_class, name_lesson, period):
 	cc = list()
 	picCount = 0
 	framecount = 0
+	
+	max_frame = temp
 	
 	while True:
 		frame1 = frame2
@@ -73,51 +66,29 @@ def doCapture(name_video, name_class, name_lesson, period):
 		cv2.imshow('delta frame', dframe)
 		cv2.imshow('mask', mask)
 		cv2.imshow('record', temp)
-		opening = getChalkBoard(temp)
-
-		list_ratio.append(getRatioPercent(opening))
-		list_frame.append(temp)
-		#framecount = framecount + 1
-		#if framecount == (fps*period/frm):
-			#temp = imgProcess(temp)
 		
-		trigger = localTrigger(list_ratio, list_frame, list_contain)
-		if trigger != 0:
-			cv2.imwrite((name_class+'/'+name_lesson+'/'+'save{0}.jpg').format(picCount), list_frame[trigger])
+		opening = getChalkBoard(temp)		
+		framecount = framecount + 1
+		
+		# Get most-written frame in a period, and export it as png.
+		# After that, the max_frame must be initialized for re-comparing in new period's start.
+		if getRatioPercent(getChalkBoard(max_frame)) < getRatioPercent(opening):
+		  max_frame = temp
+		if framecount == (fps*period/frm):
+			cv2.imwrite((name_class+'/'+name_lesson+'/'+'save{0}.jpg').format(picCount), max_frame)
 			framecount = 0
 			picCount = picCount + 1
-			print('Captured...')
-			
-		cv2.waitKey(15)
+			max_frame = temp
+			print('Captured!')
+		
+		cv2.waitKey(1)
 		
 	camera.release()
 
-def localTrigger(list_ratio, list_frame, list_contain):
-	l = len(list_ratio)
-
-	index_max = 0
-	if l > DELTA_RANGE:
-		for i in range(0, DELTA_RANGE):
-			if list_ratio[l-DELTA_RANGE+i] > list_ratio[index_max]:
-				index_max = l-DELTA_RANGE+i
-
-	if list_contain==[] or index_max - list_contain[len(list_contain)-1] > DELTA_RANGE:
-		list_contain.append(index_max)
-		list_ratio = []
-		list_frame = []
-		return index_max
-	else:
-		return 0
-
-'''		
-	if index_max in list_contain:
-		return 0
-	else:
-		list_contain.append(index_max)
-		return index_max
-'''
 print('Capturing...')
+
 l = len(sys.argv)
+# Different options by argv
 if l==1:
 	doCapture(CAM_LAPTOP, 'myClass', '1', 10)
 elif l==2:
