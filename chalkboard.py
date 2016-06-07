@@ -8,7 +8,10 @@ originCheck = False
 black_origin = -1
 
 # Returns a morphology of the input frame and initialize the first frame's
-# black pixel ratio status for calculating the ratio of black pixels of the frames after.
+#  black pixel number(black_origin) for calculating the ratio of black pixels
+#  of the frames after.
+# Getting black_origin assumes that in the start of video or the start of capturing,
+#  there's no texts on chalkboard.
 def getChalkBoard(frame):
 	global originCheck, black_origin
 	frame2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
