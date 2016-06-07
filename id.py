@@ -9,28 +9,42 @@ period=20 # sec
 width=640
 height=360
 
-CAM_LAPTOP = 0
+# The external webcam's default number for cv2.videoCapture(). If you want to use laptop's internal webcam, set this variable to 0.
+CAM_LAPTOP = 1
 CAM_DESKTOP = 0
 
 url = 'http://cs408.pikachu.io/lesson/create'
 
+# This function sends a post request to server then returns the status code.
+# file_path : string. Name of path that contains zip file to be sent.
+# url : string. Global url variable that is written on line 15 will be used for here.
 def sendFile(file_path, url):
 	payloads = {'klass_id' : 1, 'name' : 'Test'}
 	file = {'file': open(file_path, 'rb')}
 	r = requests.post(url, params=payloads, files=file)
 	return r.status_code
 
+# This function compresses a folder as a .zip file. Returns nothing.
+# output_name : string. name of the output file. ex. 'test.zip'
+# src_path : string. Name of the src path that contains pictures of frames to compress. ex) 'class/lectures/'
 def zipFolder(output_name, src_path):
 	file = zipfile.ZipFile(output_name, "w")
 	for pic in glob.glob(src_path+"/*"):
 		file.write(pic, os.path.basename(pic), zipfile.ZIP_DEFLATED)
 	file.close()
-	
+
+# This function returns grayscaled frame of the input frame.
 def gray(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (5, 5), 0)
     return gray
 
+# This function is the key function of our program.
+# 1. Find or make appropriate path for the name of class and name of lesson.
+# 2. Capture the webcam(real-time) or capture a video, and extract only background, not instructor.
+# 3. Calculate the amount of texts as ratio in the extracted frame(That's why this file imports chalkboard module).
+# 4. Save png of the choosen frame that has maximum ratio in specific period(This period can be changed by user).
+# 5. Exits when the video is end, or the webcam shutdowns.
 def doCapture(name_video, name_class, name_lesson, period):
 	if not os.path.isdir("./" + name_class + "/"):
 		os.mkdir("./" + name_class + "/")
@@ -102,7 +116,11 @@ def doCapture(name_video, name_class, name_lesson, period):
 
 print('Capturing...')
 l = len(sys.argv)
-# Different options by argv
+
+code = ''
+
+# Set variables by different options according to the argv
+# Make zip file and send it to server right after the capturing function ends.
 if l==1:
 	doCapture(CAM_LAPTOP, 'myClass', '1', 10)
 	zipFolder('myClass_1.zip', 'myClass/1')
@@ -124,6 +142,7 @@ elif l==5:
 	zipFolder(sys.argv[1]+"_"+sys.argv[2]+".zip", sys.argv[1]+"/"+sys.argv[2])
 	code = sendFile(sys.argv[1]+"_"+sys.argv[2]+".zip", url)
 
-print('request status: '+code)
+print('file send request status: '+str(code))
 
+# Close all of the cv2 windows
 cv2.destroyAllWindows()

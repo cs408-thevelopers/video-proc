@@ -7,6 +7,11 @@ THRESH_BLACK = 130
 originCheck = False
 black_origin = -1
 
+# Returns a morphology of the input frame and initialize the first frame's
+#  black pixel number(black_origin) for calculating the ratio of black pixels
+#  of the frames after.
+# Getting black_origin assumes that in the start of video or the start of capturing,
+#  there's no texts on chalkboard.
 def getChalkBoard(frame):
 	global originCheck, black_origin
 	frame2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -31,12 +36,14 @@ def getChalkBoard(frame):
 
 def getDefaultTrigger(frame):
 	return getBlacks(frame)
-	
+
+# Returns integer which is the numbers of black pixels on input frame
 def getBlacks(frame):
 	blacks = cv2.inRange(frame, 0, 128)
 	num = cv2.countNonZero(blacks)
 	return num
-	
+
+# Returns flot which is the ratio of black pixels(texts) on background(only white area of first frame) 
 def getRatioPercent(frame):
 	global black_origin
 	background = frame.size - black_origin
