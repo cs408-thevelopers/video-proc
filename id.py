@@ -1,5 +1,6 @@
 import numpy, cv2, os, glob, sys
 from chalkboard import *
+from to_pdf import *
 import zipfile, requests
 
 frm=10 # frame numbers to be skipped(almost meaning combined)
@@ -30,8 +31,10 @@ def sendFile(file_path, url):
 def zipFolder(output_name, src_path):
 	file = zipfile.ZipFile(output_name, "w")
 	for pic in glob.glob(src_path+"/*"):
-		file.write(pic, os.path.basename(pic), zipfile.ZIP_DEFLATED)
+                if not "rv" in os.path.basename(pic):
+		        file.write(pic, os.path.basename(pic), zipfile.ZIP_DEFLATED)
 	file.close()
+        print("zipFolder: Successfully made a zip file to send")
 
 # This function returns grayscaled frame of the input frame.
 def gray(frame):
@@ -102,16 +105,16 @@ def doCapture(name_video, name_class, name_lesson, period):
 		# Get most-written frame in a period, and export it as png.
 		# After that, the max_frame must be initialized for re-comparing in new period's start.
 		if getRatioPercent(getChalkBoard(max_frame)) < getRatioPercent(opening):
-		  max_frame = temp
+		        max_frame = temp
 		if framecount == (fps*period/frm):
-			cv2.imwrite((name_class+'/'+name_lesson+'/'+'save{0}.jpg').format(picCount), max_frame)
+			cv2.imwrite((name_class+'/'+name_lesson+'/'+'save{0:02d}.jpg').format(picCount), max_frame)
 			framecount = 0
 			picCount = picCount + 1
 			max_frame = temp
 			print('Captured!')
 		
 		cv2.waitKey(1)
-		
+	print("Total captures :" + str(picCount))
 	camera.release()
 
 print('Capturing...')
@@ -119,29 +122,25 @@ l = len(sys.argv)
 
 code = ''
 
+className = 'myClass'
+lectureName = '1'
+videoname = CAM_LAPTOP
+ 
 # Set variables by different options according to the argv
 # Make zip file and send it to server right after the capturing function ends.
-if l==1:
-	doCapture(CAM_LAPTOP, 'myClass', '1', 10)
-	zipFolder('myClass_1.zip', 'myClass/1')
-	code = sendFile('myClass_1.zip', url)
-elif l==2:
-	doCapture(CAM_LAPTOP, sys.argv[1], '1', 10)
-	zipFolder(sys.argv[1]+'_1.zip', sys.argv[1]+'/1')
-	code = sendFile(sys.argv[1]+'_1.zip', url)
-elif l==3:
-	doCapture(CAM_LAPTOP, sys.argv[1], sys.argv[2], 10)
-	zipFolder(sys.argv[1]+"_"+sys.argv[2]+".zip", sys.argv[1]+"/"+sys.argv[2])
-	code = sendFile(sys.argv[1]+"_"+sys.argv[2]+".zip", url)
-elif l==4:
-	doCapture(CAM_LAPTOP, sys.argv[1], sys.argv[2], int(sys.argv[3]))
-	zipFolder(sys.argv[1]+"_"+sys.argv[2]+".zip", sys.argv[1]+"/"+sys.argv[2])
-	code = sendFile(sys.argv[1]+"_"+sys.argv[2]+".zip", url)
-elif l==5:
-	doCapture(sys.argv[4], sys.argv[1], sys.argv[2], int(sys.argv[3]))
-	zipFolder(sys.argv[1]+"_"+sys.argv[2]+".zip", sys.argv[1]+"/"+sys.argv[2])
-	code = sendFile(sys.argv[1]+"_"+sys.argv[2]+".zip", url)
+if l>=2:
+	className = sys.argv[1]
+if l>=3:
+	lectureName = sys.argv[2]
+if l>=4:
+	period = int(sys.argv[3])
+if l>=5:
+	videoname = sys.argv[4]
 
+doCapture(videoname, className, lectureName, period)
+toPdf(className, lectureName)
+zipFolder(className+"_"+lectureName+".zip", className+"/"+lectureName)
+code = sendFile(className + "_" + lectureName + ".zip", url)
 print('file send request status: '+str(code))
 
 # Close all of the cv2 windows
