@@ -113,7 +113,8 @@ def doCapture(name_video, name_class, name_lesson, period):
 			max_frame = temp
 			print('Captured!')
 		
-		cv2.waitKey(1)
+		if cv2.waitKey(1)==113:
+			break
 	print("Total captures :" + str(picCount))
 	camera.release()
 
@@ -140,7 +141,7 @@ if l>=5:
 doCapture(videoname, className, lectureName, period)
 toPdf(className, lectureName)
 zipFolder(className+"_"+lectureName+".zip", className+"/"+lectureName)
-code = sendFile(className + "_" + lectureName + ".zip", url)
+#code = sendFile(className + "_" + lectureName + ".zip", url)
 print('file send request status: '+str(code))
 
 # Close all of the cv2 windows
