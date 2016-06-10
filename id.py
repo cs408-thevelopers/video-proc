@@ -141,7 +141,7 @@ if l>=5:
 doCapture(videoname, className, lectureName, period)
 toPdf(className, lectureName)
 zipFolder(className+"_"+lectureName+".zip", className+"/"+lectureName)
-#code = sendFile(className + "_" + lectureName + ".zip", url)
+code = sendFile(className + "_" + lectureName + ".zip", url)
 print('file send request status: '+str(code))
 
 # Close all of the cv2 windows
